@@ -8,31 +8,55 @@ interface CreateUserFormProps {
 function CreateUserForm({ setUserWasCreated }: CreateUserFormProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
-
-  const validatePassword = (password: string) => {
-    const errors = [];
-    if (password.length < 10) errors.push("Password must be at least 10 characters long");
-    if (password.length > 24) errors.push("Password must be at most 24 characters long");
-    if (!/\d/.test(password)) errors.push("Password must contain at least one number");
-    if (!/[A-Z]/.test(password)) errors.push("Password must contain at least one uppercase letter");
-    if (!/[a-z]/.test(password)) errors.push("Password must contain at least one lowercase letter");
-    if (/\s/.test(password)) errors.push("Password cannot contain spaces");
-
-    return errors;
-  };
+  const [passwordErrors, setPasswordErrors] = useState({
+    length: "",
+    number: "",
+    uppercase: "",
+    lowercase: "",
+    spaces: "",
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const errors = validatePassword(password);
-    if (errors.length > 0) {
+    let errors = {
+      length: "",
+      number: "",
+      uppercase: "",
+      lowercase: "",
+      spaces: "",
+    };
+
+    if (password.length < 10) {
+      errors.length = "Password must be at least 10 characters long";
+    }
+    if (password.length > 24) {
+      errors.length = "Password must be at most 24 characters long";
+    }
+    if (!password.match(/\d/)) {
+      errors.number = "Password must contain at least one number";
+    }
+    if (!password.match(/[A-Z]/)) {
+      errors.uppercase = "Password must contain at least one uppercase letter";
+    }
+    if (!password.match(/[a-z]/)) {
+      errors.lowercase = "Password must contain at least one lowercase letter";
+    }
+    if (password.includes(" ")) {
+      errors.spaces = "Password cannot contain spaces";
+    }
+
+    if (Object.values(errors).some((error) => error !== "")) {
       setPasswordErrors(errors);
       return;
     }
 
-    setPasswordErrors([]);
-    console.log({ username, password });
+    setPasswordErrors({ length: "", number: "", uppercase: "", lowercase: "", spaces: "" });
+
+    console.log("User Created:");
+    console.log("Username:", username);
+    console.log("Password:", password);
+
     setUserWasCreated(true);
   };
 
@@ -56,12 +80,12 @@ function CreateUserForm({ setUserWasCreated }: CreateUserFormProps) {
           aria-label="Password"
         />
 
-        {/* Show validation errors */}
-        {passwordErrors.length > 0 && (
+        {/* Show multiple error messages using the object */}
+        {Object.values(passwordErrors).some((error) => error !== "") && (
           <ul style={{ color: "red", fontSize: "14px", marginTop: "8px" }}>
-            {passwordErrors.map((error, index) => (
-              <li key={index}>{error}</li>
-            ))}
+            {Object.entries(passwordErrors).map(([key, error], index) =>
+              error ? <li key={index}>{error}</li> : null
+            )}
           </ul>
         )}
 
