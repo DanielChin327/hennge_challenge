@@ -1,34 +1,40 @@
-import type { CSSProperties, Dispatch, SetStateAction, useState } from 'react';
-
-
+import { useState } from 'react';
+import type { CSSProperties, Dispatch, SetStateAction } from 'react';
 
 interface CreateUserFormProps {
   setUserWasCreated: Dispatch<SetStateAction<boolean>>;
 }
 
-function CreateUserForm({}: CreateUserFormProps) {
-
-  const [username, setUserName] = useState('');
+function CreateUserForm({ setUserWasCreated }: CreateUserFormProps) {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault(); // Prevents page reload
+    console.log({ username, password }); // Temporary debug log before API call
+  };
 
   return (
     <div style={formWrapper}>
-      <form style={form}>
-        {/* make sure the username and password are submitted */}
-        {/* make sure the inputs have the accessible names of their labels */}
+      <form style={form} onSubmit={handleSubmit}>
         <label style={formLabel}>Username</label>
-        <input 
-          style={formInput} 
+        <input
+          style={formInput}
           value={username}
-          onChange={(e) => setUserName(e.target.value)}
+          onChange={(e) => setUsername(e.target.value)}
           aria-label="Username"
         />
 
         <label style={formLabel}>Password</label>
-        <input style={formInput} />
+        <input
+          style={formInput}
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          aria-label="Password"
+        />
 
-        <button style={formButton}>Create User</button>
+        <button style={formButton} type="submit">Create User</button>
       </form>
     </div>
   );
