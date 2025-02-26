@@ -15,9 +15,11 @@ function CreateUserForm({ setUserWasCreated }: CreateUserFormProps) {
     lowercase: "",
     spaces: "",
   });
+  const [apiError, setApiError] = useState(""); // Stores API errors
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setApiError(""); // Clear previous errors
 
     let errors = {
       length: "",
@@ -53,41 +55,49 @@ function CreateUserForm({ setUserWasCreated }: CreateUserFormProps) {
 
     setPasswordErrors({ length: "", number: "", uppercase: "", lowercase: "", spaces: "" });
 
-    console.log("User Created:");
-    console.log("Username:", username);
-    console.log("Password:", password);
+    try {
+      const response = await fetch("https://api.challenge.hennge.com/password-validation-challenge-api/001/challenge-signup", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsic29yYmV0LXBvaXNlZC04OUBpY2xvdWQuY29tIl0sImlzcyI6Imhlbm5nZS1hZG1pc3Npb24tY2hhbGxlbmdlIiwic3ViIjoiY2hhbGxlbmdlIn0.gQgzBuaWgF1pe-BiUqMz6NOwfYrLel00X1Cvl1IUUco", 
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: username,
+          password: password,
+        }),
+      });
 
-    setUserWasCreated(true);
+      if (response.ok) {
+        setUserWasCreated(true);
+      } else {
+        const responseData = await response.json();
+        if (response.status === 500) {
+          setApiError("Something went wrong, please try again.");
+        } else if (responseData.error === "WeakPassword") {
+          setApiError("Sorry, the entered password is not allowed, please try a different one.");
+        } else if (response.status === 401 || response.status === 403) {
+          setApiError("Not authenticated to access this resource.");
+        } else {
+          setApiError("An unknown error occurred.");
+        }
+      }
+    } catch (error) {
+      setApiError("Something went wrong, please try again.");
+    }
   };
 
   return (
     <div style={formWrapper}>
       <form style={form} onSubmit={handleSubmit}>
         <label style={formLabel}>Username</label>
-        <input
-          style={formInput}
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          aria-label="Username"
-        />
+        <input style={formInput} value={username} onChange={(e) => setUsername(e.target.value)} aria-label="Username" />
 
         <label style={formLabel}>Password</label>
-        <input
-          style={formInput}
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          aria-label="Password"
-        />
+        <input style={formInput} type="password" value={password} onChange={(e) => setPassword(e.target.value)} aria-label="Password" />
 
-        {/* Show multiple error messages using the object */}
-        {Object.values(passwordErrors).some((error) => error !== "") && (
-          <ul style={{ color: "red", fontSize: "14px", marginTop: "8px" }}>
-            {Object.entries(passwordErrors).map(([key, error], index) =>
-              error ? <li key={index}>{error}</li> : null
-            )}
-          </ul>
-        )}
+        {/* Show API error messages */}
+        {apiError !== "" && <p style={{ color: "red", fontSize: "14px", marginTop: "8px" }}>{apiError}</p>}
 
         <button style={formButton} type="submit">Create User</button>
       </form>
