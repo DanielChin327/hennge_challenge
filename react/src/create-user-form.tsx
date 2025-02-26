@@ -1,17 +1,29 @@
-import type { CSSProperties, Dispatch, SetStateAction } from 'react';
+import type { CSSProperties, Dispatch, SetStateAction, useState } from 'react';
+
+
 
 interface CreateUserFormProps {
   setUserWasCreated: Dispatch<SetStateAction<boolean>>;
 }
 
 function CreateUserForm({}: CreateUserFormProps) {
+
+  const [username, setUserName] = useState('');
+  const [password, setPassword] = useState('');
+
+
   return (
     <div style={formWrapper}>
       <form style={form}>
         {/* make sure the username and password are submitted */}
         {/* make sure the inputs have the accessible names of their labels */}
         <label style={formLabel}>Username</label>
-        <input style={formInput} />
+        <input 
+          style={formInput} 
+          value={username}
+          onChange={(e) => setUserName(e.target.value)}
+          aria-label="Username"
+        />
 
         <label style={formLabel}>Password</label>
         <input style={formInput} />
