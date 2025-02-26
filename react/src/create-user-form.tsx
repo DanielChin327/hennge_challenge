@@ -8,10 +8,32 @@ interface CreateUserFormProps {
 function CreateUserForm({ setUserWasCreated }: CreateUserFormProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
+
+  const validatePassword = (password: string) => {
+    const errors = [];
+    if (password.length < 10) errors.push("Password must be at least 10 characters long");
+    if (password.length > 24) errors.push("Password must be at most 24 characters long");
+    if (!/\d/.test(password)) errors.push("Password must contain at least one number");
+    if (!/[A-Z]/.test(password)) errors.push("Password must contain at least one uppercase letter");
+    if (!/[a-z]/.test(password)) errors.push("Password must contain at least one lowercase letter");
+    if (/\s/.test(password)) errors.push("Password cannot contain spaces");
+
+    return errors;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault(); // Prevents page reload
-    console.log({ username, password }); // Temporary debug log before API call
+    e.preventDefault();
+
+    const errors = validatePassword(password);
+    if (errors.length > 0) {
+      setPasswordErrors(errors);
+      return;
+    }
+
+    setPasswordErrors([]);
+    console.log({ username, password });
+    setUserWasCreated(true);
   };
 
   return (
@@ -34,6 +56,15 @@ function CreateUserForm({ setUserWasCreated }: CreateUserFormProps) {
           aria-label="Password"
         />
 
+        {/* Show validation errors */}
+        {passwordErrors.length > 0 && (
+          <ul style={{ color: "red", fontSize: "14px", marginTop: "8px" }}>
+            {passwordErrors.map((error, index) => (
+              <li key={index}>{error}</li>
+            ))}
+          </ul>
+        )}
+
         <button style={formButton} type="submit">Create User</button>
       </form>
     </div>
@@ -41,6 +72,8 @@ function CreateUserForm({ setUserWasCreated }: CreateUserFormProps) {
 }
 
 export { CreateUserForm };
+
+// Styles remain the same...
 
 const formWrapper: CSSProperties = {
   maxWidth: '500px',
